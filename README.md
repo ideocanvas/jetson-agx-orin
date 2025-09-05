@@ -201,7 +201,33 @@ To ensure you are installing Python packages that are optimized for the Jetson p
 4.  **Apply the Changes:**
     Open a new terminal or run `source ~/.bashrc` for the changes to take effect.
 
-## 7. AI Development Tools
+## 7. Headless VNC Setup
+
+For remote access to your Jetson AGX Orin's desktop environment without a physical monitor, you can set up headless VNC. This is particularly useful for accessing GUI applications like ComfyUI's web interface or running desktop applications remotely.
+
+**Quick Setup:**
+
+For detailed instructions on setting up headless VNC with virtual display support, refer to the [headless VNC guide](headless-vnc.md).
+
+**Overview of the setup process:**
+- Install and configure x11vnc for VNC server
+- Create a virtual EDID (Extended Display Identification Data) for headless operation
+- Configure X11 with a virtual monitor
+- Set up automatic VNC service startup
+- Enable auto-login for seamless remote access
+
+**Key benefits:**
+- Access your Jetson's desktop remotely without a physical monitor
+- Run GUI applications and access web interfaces from any device
+- Maintain persistent desktop sessions
+- Perfect for headless AI development workflows
+
+**Default VNC connection:**
+- Port: 5900
+- Password: Set during x11vnc configuration
+- Resolution: 1920x1080 (configurable)
+
+## 8. AI Development Tools
 
 This repository includes containerized setups for popular AI development tools optimized for the Jetson AGX Orin platform. The following sections provide instructions for using Ollama, ComfyUI, and building bitsandbytes.
 
