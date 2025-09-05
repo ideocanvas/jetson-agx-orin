@@ -200,3 +200,172 @@ To ensure you are installing Python packages that are optimized for the Jetson p
 
 4.  **Apply the Changes:**
     Open a new terminal or run `source ~/.bashrc` for the changes to take effect.
+
+## 7. AI Development Tools
+
+This repository includes containerized setups for popular AI development tools optimized for the Jetson AGX Orin platform. The following sections provide instructions for using Ollama, ComfyUI, and building bitsandbytes.
+
+### Ollama - Local LLM Inference
+
+Ollama provides a simple way to run large language models locally on your Jetson device.
+
+**Setup and Usage:**
+
+1.  **Navigate to the Ollama directory:**
+    ```bash
+    cd ollama
+    ```
+
+2.  **Build and start the Ollama container:**
+    ```bash
+    docker-compose up --build -d
+    ```
+
+3.  **Access the Ollama container:**
+    ```bash
+    docker-compose exec app bash
+    ```
+
+4.  **Download and run a model (inside the container):**
+    ```bash
+    # Example: Download and run Llama 3.2 3B model
+    ollama pull llama3.2:3b
+    ollama run llama3.2:3b
+    ```
+
+5.  **Available models:**
+    - Visit [Ollama Library](https://ollama.com/library) to browse available models
+    - Recommended models for Jetson AGX Orin: `llama3.2:3b`, `phi3:mini`, `gemma2:2b`
+
+6.  **Model storage:**
+    - Models are stored in the `ollama/models` directory on the host
+    - This ensures models persist between container restarts
+
+**Configuration:**
+- The container uses the optimized Jetson-AI-Lab PyPI index
+- Ollama version 0.11.10 is installed
+- Base image: `dustynv/ollama:0.6.8-r36.4-cu126-22.04`
+
+### ComfyUI - Node-based Stable Diffusion
+
+ComfyUI provides a powerful, node-based interface for Stable Diffusion image generation.
+
+**Setup and Usage:**
+
+1.  **Navigate to the ComfyUI directory:**
+    ```bash
+    cd comfyui
+    ```
+
+2.  **Build and start the ComfyUI container:**
+    ```bash
+    docker-compose up --build
+    ```
+
+3.  **Access ComfyUI web interface:**
+    - Open your web browser and navigate to: `http://localhost:8188`
+    - The interface will load with the default workflow
+
+4.  **Download models:**
+    ```bash
+    # Access the container
+    docker-compose exec app bash
+
+    # Navigate to models directory
+    cd ComfyUI/models/checkpoints
+
+    # Download a model (example: SDXL-Turbo)
+    wget https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/sd_xl_turbo_1.0_fp16.safetensors
+    ```
+
+5.  **Recommended models for Jetson:**
+    - SDXL-Turbo (fast inference)
+    - SD 1.5 models (lower VRAM usage)
+    - ControlNet models for guided generation
+
+**Features:**
+- Pre-built with bitsandbytes for quantized model support
+- Optimized PyTorch 2.7 base image
+- CUDA 12.8 support
+- FFmpeg included for video processing
+
+**Configuration:**
+- Port 8188 is exposed for web access
+- Working directory is mounted to `/home/app` in the container
+- Uses Jetson-optimized PyPI packages
+
+### bitsandbytes - Quantization Library
+
+bitsandbytes enables efficient quantization of neural networks, reducing memory usage while maintaining performance.
+
+**Building bitsandbytes:**
+
+1.  **Navigate to the bitsandbytes directory:**
+    ```bash
+    cd bitsandbytes
+    ```
+
+2.  **Run the build script:**
+    ```bash
+    chmod +x build.sh
+    ./build.sh
+    ```
+
+3.  **What the build script does:**
+    - Sets CUDA version to 12.6
+    - Configures library paths for CUDA 12.4
+    - Clones the official bitsandbytes repository
+    - Builds with CUDA backend support
+    - Installs the compiled library
+
+**Usage in Python:**
+```python
+import bitsandbytes as bnb
+from transformers import AutoModelForCausalLM
+
+# Load model with 8-bit quantization
+model = AutoModelForCausalLM.from_pretrained(
+    "model_name",
+    load_in_8bit=True,
+    device_map="auto"
+)
+```
+
+**Integration:**
+- bitsandbytes is automatically built and included in the ComfyUI container
+- Can be used independently for other PyTorch projects
+- Supports both 8-bit and 4-bit quantization
+
+### Performance Tips
+
+1.  **Memory Management:**
+    - Monitor GPU memory usage with `jtop`
+    - Use quantized models when possible
+    - Consider model size vs. available VRAM (64GB AGX Orin has ~64GB unified memory)
+
+2.  **Model Selection:**
+    - Start with smaller models (3B-7B parameters for LLMs)
+    - Use SDXL-Turbo for faster image generation
+    - Consider fine-tuned models optimized for specific tasks
+
+3.  **Docker Optimization:**
+    - Ensure NVIDIA runtime is set as default (covered in Docker setup)
+    - Use `--gpus all` flag if running containers manually
+    - Monitor container resource usage
+
+### Troubleshooting
+
+**Ollama Issues:**
+- If models fail to load, check available memory with `jtop`
+- Ensure the models directory has proper permissions
+- Restart the container if encountering CUDA errors
+
+**ComfyUI Issues:**
+- If the web interface doesn't load, check if port 8188 is accessible
+- For "out of memory" errors, try smaller models or lower resolution
+- Clear browser cache if workflows don't load properly
+
+**bitsandbytes Issues:**
+- If build fails, ensure CUDA 12.4 is properly installed
+- Check that `/usr/local/cuda-12.4` exists and is accessible
+- Verify GCC compiler is installed: `sudo apt install build-essential`
