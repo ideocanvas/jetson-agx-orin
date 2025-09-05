@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    image: comfyui:jetson-r36.4.0
+    # image: dustynv/pytorch:2.6-r36.4.0-cu128
+    volumes:
+      # - $PWD/.cache:/home/app/.cache
+      - $PWD:/home/app
+    ports:
+      - 8188:8188
+    # restart: unless-stopped
+    env_file:
+      - .env
+    # entrypoint: ["tail", "-f", "/dev/null"]
